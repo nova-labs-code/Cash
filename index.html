@@ -1,45 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Playtime Leaderboard</title>
+<title>Roblox Playtime Leaderboard</title>
 
 <style>
 body{
-    margin:0;
     background:#0b1220;
     color:white;
     font-family:Arial;
-}
-
-.container{
-    max-width:800px;
-    margin:auto;
     padding:30px;
-}
-
-h1{
-    text-align:center;
-}
-
-input{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    border:none;
-    margin:15px 0;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-    background:#111a2e;
-    border-radius:10px;
-    overflow:hidden;
 }
 
-th, td{
+th,td{
     padding:12px;
     border-bottom:1px solid #1f2a44;
 }
@@ -47,84 +24,60 @@ th, td{
 th{
     background:#16213a;
 }
-
-tr:hover{
-    background:#1a2742;
-}
-
-.rank{
-    color:#4ea1ff;
-    font-weight:bold;
-}
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
 <h1>🏆 Playtime Leaderboard</h1>
-
-<input id="search" placeholder="Search player..." oninput="render()">
 
 <table>
 <thead>
 <tr>
 <th>Rank</th>
-<th>Player</th>
-<th>Hours</th>
+<th>UserId</th>
+<th>Time (hrs)</th>
 </tr>
 </thead>
 
 <tbody id="board"></tbody>
 </table>
 
-</div>
-
 <script>
 
-const URL =
-"https://raw.githubusercontent.com/nova-labs-code/Cash/main/players.json";
-
-let players = [];
+const UNIVERSE_ID = "10293192757";
+const API_KEY = "X7ZHfNaPNkCJdZu63xW617Bzoafr60nL93hZgDr7ItgExDY/ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNkluTnBaeTB5TURJeExUQTNMVEV6VkRFNE9qVXhPalE1V2lJc0luUjVjQ0k2SWtwWFZDSjkuZXlKaGRXUWlPaUpTYjJKc2IzaEpiblJsY201aGJDSXNJbWx6Y3lJNklrTnNiM1ZrUVhWMGFHVnVkR2xqWVhScGIyNVRaWEoyYVdObElpd2lZbUZ6WlVGd2FVdGxlU0k2SWxnM1draG1UbUZRVG10RFNtUmFkVFl6ZUZjMk1UZENlbTloWm5JMk1HNU1PVE5vV21kRWNqZEpkR2RGZUVSWkx5SXNJbTkzYm1WeVNXUWlPaUl4TURJeU56azFPRFE1TnlJc0ltVjRjQ0k2TVRjNE1qWXdNVFEzT1N3aWFXRjBJam94TnpneU5UazNPRGM1TENKdVltWWlPakUzT0RJMU9UYzROemw5LmVjaUM3M0JJSmFKNFhqcTZ6M2llSFNNNElxdmo1UzBDdzVnOUNFNnFNZ19WNUdYX0E2aTNMUlRhNzBLbWduUExQN1pHci1ncmVleE1ZUk4xenBEWXZ5bVJya0JWMFB1SDhyU3UwNGQzMUJQeklkS1U0ZjE4dldkcU9ISGluQnAyeHh0S0lPN0c1UElsaUZMbWQxSEQ4SzdTMlV2VjAzWER2b2FramZPbkctMEt1M2pJcGdwS1RiUUhKemM1Qkwyc19LMDJxUGxYdlN0Qm9qdDN0U3plZ1ctWDVFZWRpcFpqQVZXNDNXd3VXUFNBZUh2QW9UeV8wQUdWdWk2VWxDTTNUZjJNNnBTMlZVRTRrSWFldmE0b3dNX0xmZG16aXVFQ2o5WlpadUFHUzlCOXBxQTZEUkxfZkdqb21vanRETUhpLVVtd1k5RW92UWdFZTMxOUtzZkpTdw==";
 
 async function load(){
 
-    try{
+    const url =
+    `https://apis.roblox.com/cloud/v2/universes/${UNIVERSE_ID}/data-stores/Playtime_v1/entries?limit=100`;
 
-        const res = await fetch(URL + "?t=" + Date.now());
-        const data = await res.json();
+    const res = await fetch(url, {
+        headers:{
+            "x-api-key": API_KEY
+        }
+    });
 
-        players = Object.values(data.players || {});
+    const data = await res.json();
 
-        render();
+    const players = (data.data || []).map(p => {
+        return {
+            userId: p.key,
+            time: p.value
+        };
+    });
 
-    }catch(err){
-        console.log("Failed to load:", err);
-    }
-}
-
-function render(){
-
-    const q =
-        document.getElementById("search")
-        .value.toLowerCase();
-
-    let list = players.filter(p =>
-        p.username.toLowerCase().includes(q)
-    );
-
-    list.sort((a,b)=>b.time - a.time);
+    players.sort((a,b)=>b.time-a.time);
 
     document.getElementById("board").innerHTML =
-        list.map((p,i)=>`
-            <tr>
-                <td class="rank">#${i+1}</td>
-                <td>${p.username}</td>
-                <td>${(p.time/3600).toFixed(2)}h</td>
-            </tr>
-        `).join("");
-
+    players.map((p,i)=>`
+        <tr>
+            <td>#${i+1}</td>
+            <td>${p.userId}</td>
+            <td>${(p.time/3600).toFixed(2)}</td>
+        </tr>
+    `).join("");
 }
 
 load();
