@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Playtime Leaderboard</title>
+
+<style>
+body{
+    background:#111;
+    color:white;
+    font-family:Arial;
+    padding:40px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+td,th{
+    padding:15px;
+    border-bottom:1px solid #333;
+}
+
+tr:hover{
+    background:#222;
+}
+</style>
+</head>
+<body>
+
+<h1>🏆 Playtime Leaderboard</h1>
+
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Player</th>
+<th>Hours</th>
+</tr>
+</thead>
+
+<tbody id="board"></tbody>
+</table>
+
+<script>
+async function load(){
+
+    const data =
+        await fetch(
+            "https://raw.githubusercontent.com/USERNAME/REPO/main/players.json"
+        )
+        .then(r=>r.json());
+
+    const players =
+        Object.values(
+            data.players
+        );
+
+    players.sort(
+        (a,b)=>
+        b.time-a.time
+    );
+
+    document
+        .getElementById(
+            "board"
+        )
+        .innerHTML =
+        players
+        .map((p,i)=>
+            `
+            <tr>
+            <td>${i+1}</td>
+            <td>${p.username}</td>
+            <td>${(
+                p.time
+                /3600
+            ).toFixed(2)}</td>
+            </tr>
+            `
+        )
+        .join("");
+}
+
+load();
+setInterval(load,30000);
+</script>
+
+</body>
+</html>
